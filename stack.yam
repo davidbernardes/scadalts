@@ -1,0 +1,32 @@
+#ScadaLTS
+version: '3.1'
+
+network:
+  network-scadabr:
+    driver: bridge
+
+services:
+
+  db:
+    container_name:scadadb
+    image: mariadb
+    restart: always
+    networks:
+      - network-scadabr
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: scadalts
+
+  scadabr:
+    image: maluuba/tomcat7-java8
+    restart: always
+    network:
+      - network-scadabr
+    links:
+      - db
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
