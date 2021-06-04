@@ -1,17 +1,10 @@
 #ScadaLTS
-version: '3.1'
-
-networks:
-  network-scadabr:
-    driver: bridge
+version: '3.9'
 
 services:
-
   scadadb:
     image: mariadb
     restart: always
-    networks:
-      - network-scadabr
     ports:
       - 3306:3306
     environment:
@@ -20,12 +13,15 @@ services:
 
   scadabr:
     image: maluuba/tomcat7-java8
+    stdin_open: true
+    tty: true
     restart: always
-    networks:
-      - network-scadabr
-    links:
-      - scadadb
     ports:
       - 8080:8080
     depends_on:
       - scadadb
+
+
+      docker run -p 80:9090 -p 3306:3306 --name scadabr -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=scadabr -e MYSQL_USER=scadabr -e MYSQL_PASSWORD=scadabr -d davidbernardes/scadabr
+      select `t`.`id` AS `id`,`t`.`dataPointId` AS `dataPointId`,`t`.`xid` AS `xid`,`t`.`pointValue` AS `pointValue`,`t`.`ts` AS `ts`,`t`.`rn` AS `rn` from (select `scadabr`.`pointValues`.`id` AS `id`,`scadabr`.`pointValues`.`dataPointId` AS `dataPointId`,`scadabr`.`dataPoints`.`xid` AS `xid`,`scadabr`.`pointValues`.`pointValue` AS `pointValue`,`scadabr`.`pointValues`.`ts` AS `ts`,row_number() over ( partition by `scadabr`.`pointValues`.`dataPointId` order by `scadabr`.`pointValues`.`ts` desc) AS `rn` from (`scadabr`.`pointValues` join `scadabr`.`dataPoints` on(`scadabr`.`pointValues`.`dataPointId` = `scadabr`.`dataPoints`.`id`))) `t` where `t`.`rn` = 1
+
